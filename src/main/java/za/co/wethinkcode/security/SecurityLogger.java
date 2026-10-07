@@ -20,15 +20,29 @@ public class SecurityLogger {
     // Record a security event
     public void log(String eventType, String username) {
 
+        String safeUsername = sanitize(username);
+
         String event = Instant.now()
                 + " | "
                 + eventType
                 + " | "
-                + username;
+                + safeUsername;
 
         events.add(event);
 
         writeToFile(event);
+    }
+
+    // Remove characters that can create fake log lines
+    private String sanitize(String value) {
+
+        if (value == null) {
+            return "null";
+        }
+
+        return value
+                .replace("\r", "_")
+                .replace("\n", "_");
     }
 
     // Write the event to the log file

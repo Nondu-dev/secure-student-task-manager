@@ -11,77 +11,87 @@ class SecurityLoggerTest {
 
     @Test
     void securityEventCanBeLogged() {
-
         SecurityLogger logger = new SecurityLogger();
 
         logger.log("LOGIN_SUCCESS", "alice");
 
-        assertEquals(
-                1,
-                logger.getEvents().size()
-        );
+        assertEquals(1, logger.getEvents().size());
     }
 
     @Test
     void loggedEventContainsEventType() {
-
         SecurityLogger logger = new SecurityLogger();
 
         logger.log("LOGIN_FAILED", "alice");
 
         assertTrue(
-                logger.getEvents().get(0).contains("LOGIN_FAILED")
+                logger.getEvents()
+                        .get(0)
+                        .contains("LOGIN_FAILED")
         );
     }
 
     @Test
     void loggedEventContainsUsername() {
-
         SecurityLogger logger = new SecurityLogger();
 
-        logger.log("LOGIN_SUCCESS", "alice");
+        logger.log("LOGIN_FAILED", "alice");
 
         assertTrue(
-                logger.getEvents().get(0).contains("alice")
+                logger.getEvents()
+                        .get(0)
+                        .contains("alice")
         );
     }
 
     @Test
     void multipleEventsAreStored() {
-
         SecurityLogger logger = new SecurityLogger();
 
         logger.log("LOGIN_FAILED", "alice");
-        logger.log("LOGIN_FAILED", "alice");
-        logger.log("LOGIN_SUCCESS", "alice");
+        logger.log("LOGIN_SUCCESS", "bob");
 
-        assertEquals(
-                3,
-                logger.getEvents().size()
-        );
+        assertEquals(2, logger.getEvents().size());
     }
 
     @Test
     void securityEventIsWrittenToLogFile() throws Exception {
-
         SecurityLogger logger = new SecurityLogger();
 
-        logger.log("LOGIN_FAILED", "alice");
+        logger.log("LOGIN_SUCCESS", "alice");
 
         Path logFile = Path.of("security.log");
 
-        assertTrue(
-                Files.exists(logFile)
+        assertTrue(Files.exists(logFile));
+
+        String content = Files.readString(logFile);
+
+        assertTrue(content.contains("LOGIN_SUCCESS"));
+        assertTrue(content.contains("alice"));
+    }
+
+    @Test
+    void usernameNewlineIsSanitizedInLog() throws Exception {
+        Path logFile = Path.of("security.log");
+
+        Files.deleteIfExists(logFile);
+
+        SecurityLogger logger = new SecurityLogger();
+
+        String maliciousUsername =
+                "alice\nLOGIN_SUCCESS | hacker";
+
+        logger.log(
+                "LOGIN_FAILED",
+                maliciousUsername
         );
 
         String content = Files.readString(logFile);
 
-        assertTrue(
-                content.contains("LOGIN_FAILED")
-        );
-
-        assertTrue(
-                content.contains("alice")
+        assertFalse(
+                content.contains(
+                        "alice\nLOGIN_SUCCESS | hacker"
+                )
         );
     }
 }
