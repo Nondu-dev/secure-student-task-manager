@@ -34,4 +34,29 @@ public class UserService {
             throw exception;
         }
     }
+        // Check user login details
+    public boolean login(String username, String password) throws Exception {
+
+        String sql = """
+                SELECT password_hash
+                FROM users
+                WHERE username = ?
+                """;
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, username);
+
+            var result = statement.executeQuery();
+
+            if (!result.next()) {
+                return false;
+            }
+
+            String storedHash = result.getString("password_hash");
+
+            return PasswordService.checkPassword(password, storedHash);
+        }
+    }
 }
