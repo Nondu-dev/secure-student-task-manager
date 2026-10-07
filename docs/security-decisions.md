@@ -4,11 +4,7 @@
 
 This document explains the main security decisions made in the Secure Student Task Manager.
 
-For each security feature, the document explains:
-
-* What was chosen
-* Why it was chosen
-* What security problem it helps prevent
+For each security feature, the document explains what was chosen, why it was chosen, and what security problem it helps prevent.
 
 ---
 
@@ -22,9 +18,9 @@ Use BCrypt to hash user passwords before storing them in the database.
 
 Passwords should never be stored as plain text.
 
-BCrypt is designed specifically for password hashing and includes a salt.
+BCrypt is designed for password hashing and uses a salt.
 
-This means that the same password can produce different hashes.
+This means the same password can produce different hashes.
 
 ### Security benefit
 
@@ -36,7 +32,7 @@ If the database is exposed, an attacker does not immediately see the users' orig
 
 ### Decision
 
-Use Java `PreparedStatement` for database queries that contain user input.
+Use Java PreparedStatement for database queries that contain user input.
 
 ### Why
 
@@ -44,15 +40,15 @@ Building SQL queries by joining strings can allow SQL injection.
 
 For example, an attacker could enter:
 
-```text
-' OR '1'='1
-```
+OR 1 = 1
+
+An unsafe SQL query could allow this input to change the meaning of the query.
 
 PreparedStatement keeps the SQL command separate from the user input.
 
 ### Security benefit
 
-This helps prevent attackers from changing the meaning of SQL queries.
+PreparedStatement helps prevent attackers from changing the meaning of SQL queries through malicious input.
 
 ---
 
@@ -60,19 +56,13 @@ This helps prevent attackers from changing the meaning of SQL queries.
 
 ### Decision
 
-Store the owner's `user_id` with every task.
+Store the owner's user_id with every task.
 
 ### Why
 
 The application needs to know which user owns each task.
 
-When a user requests a task, the application compares:
-
-```text
-Task owner ID
-       ↓
-Logged-in user ID
-```
+When a user requests a task, the application compares the task owner ID with the logged-in user ID.
 
 If the IDs are different, access is rejected.
 
@@ -82,7 +72,34 @@ This prevents one user from accessing another user's private tasks.
 
 ---
 
-## 5. UUID Session Tokens
+## 5. Input Validation
+
+### Decision
+
+Validate usernames, passwords and task titles before they are stored or processed.
+
+### Why
+
+Invalid or unexpected input can cause security and application problems.
+
+The project uses ValidationService to check:
+
+- Usernames are not empty and are within the allowed length.
+- Passwords are not empty and meet the minimum length.
+- Task titles are not empty and are within the allowed length.
+
+The validation is integrated into:
+
+- User registration
+- Task creation
+
+### Security benefit
+
+Invalid input is rejected early before it reaches the database or other application logic.
+
+---
+
+## 6. UUID Session Tokens
 
 ### Decision
 
@@ -94,15 +111,17 @@ The application needs a value that identifies a user's session without using the
 
 A UUID provides a randomly generated token that is difficult to guess.
 
+SessionService stores the session token together with the user's ID.
+
 ### Security benefit
 
 An attacker cannot simply invent a valid session token.
 
-Invalid tokens are rejected by the `SessionService`.
+Invalid or unknown tokens are rejected.
 
 ---
 
-## 6. Login Attempt Protection
+## 7. Login Attempt Protection
 
 ### Decision
 
@@ -116,7 +135,7 @@ The application counts failed attempts for each username.
 
 After five failed attempts, the account is blocked.
 
-A successful login resets the counter.
+A successful login resets the failed-attempt counter.
 
 ### Security benefit
 
@@ -124,19 +143,17 @@ This makes repeated password guessing more difficult.
 
 ---
 
-## 7. Security Logging
+## 8. Security Logging
 
 ### Decision
 
-Record important security events.
+Record important security events in a persistent security.log file.
 
 The application currently records:
 
-```text
-LOGIN_SUCCESS
-LOGIN_FAILED
-ACCOUNT_BLOCKED
-```
+- LOGIN_SUCCESS
+- LOGIN_FAILED
+- ACCOUNT_BLOCKED
 
 ### Why
 
@@ -144,13 +161,35 @@ Security events can help identify suspicious activity.
 
 For example, many failed login attempts could indicate that someone is trying to guess a password.
 
+The log is stored in a file so that security events are not lost when the application continues running.
+
 ### Security benefit
 
-The application has a record of important authentication events.
+The application has a persistent record of important authentication events.
 
 ---
 
-## 8. Automated Security Tests
+## 9. Log Injection Protection
+
+### Decision
+
+Sanitize newline and carriage-return characters from usernames before writing them to the security log.
+
+### Why
+
+An attacker could place newline characters in a username to make one log entry look like multiple entries.
+
+Without protection, an attacker could create fake-looking log entries.
+
+The SecurityLogger replaces newline and carriage-return characters with safe characters before writing the username.
+
+### Security benefit
+
+This prevents malicious input from creating fake lines in the security log.
+
+---
+
+## 10. Automated Security Tests
 
 ### Decision
 
@@ -164,41 +203,42 @@ The tests include normal use and simulated attacks.
 
 Examples include:
 
-* Incorrect passwords
-* SQL injection
-* Unauthorized task access
-* Fake session tokens
-* Brute-force login attempts
+- Incorrect passwords
+- SQL injection
+- Unauthorized task access
+- Fake session tokens
+- Brute-force login attempts
+- Log injection
+
+The current test suite contains 49 tests.
 
 ### Security benefit
 
 Automated tests provide evidence that the security controls are working.
 
-They can also be run again after future changes to make sure existing security protections still work.
+The tests can also be run again after future changes to make sure existing security protections still work.
 
 ---
 
-## 9. Simple Security Design
+## 11. Separation of Security Responsibilities
 
 ### Decision
 
-Keep the security design simple and separated into different services.
+Keep security responsibilities separated into different services.
 
 Examples include:
 
-```text
-PasswordService
-ValidationService
-SessionService
-LoginProtectionService
-SecurityLogger
-UserService
-TaskService
-```
+- PasswordService
+- ValidationService
+- SessionService
+- LoginProtectionService
+- SecurityLogger
+- UserService
+- TaskService
 
 ### Why
 
-Separating responsibilities makes the code easier to understand, test, and maintain.
+Separating responsibilities makes the code easier to understand, test and maintain.
 
 Each service has a specific responsibility.
 
@@ -208,23 +248,9 @@ Security logic is easier to test and less likely to be mixed into unrelated part
 
 ---
 
-## 10. Known Limitations
+## 12. Known Limitations
 
-The project is still being developed, so some security features need further integration.
-
-### Input validation
-
-`ValidationService` has been implemented and tested, but it still needs to be connected directly to user registration and task creation.
-
-### Session integration
-
-`SessionService` has been implemented and tested, but it still needs to be connected directly to the login process.
-
-### Security log storage
-
-Security events are currently stored in memory.
-
-A future version could store important security events in a file or database.
+The project is still being developed, so some security improvements can be added in future versions.
 
 ### Session expiration
 
@@ -232,48 +258,34 @@ Sessions currently do not have an expiration time.
 
 A future improvement would be to automatically expire sessions after a period of inactivity.
 
-### Login blocking
+### Login blocking duration
 
-The current login protection remains blocked while the `LoginProtectionService` instance is running.
+The current login protection blocks an account after five failed attempts, but there is no time-based automatic unlock.
 
-A future version could add a time-based lockout.
+A future version could add a temporary lockout period.
+
+### Log monitoring
+
+Security events are stored in the local security.log file.
+
+A future version could send important security events to a centralized monitoring system.
 
 ---
 
-## 11. Summary
+## 13. Summary
 
 The main security decisions were made to protect the application against common attacks.
 
 The project uses:
 
-```text
-BCrypt
-   ↓
-Password protection
-
-PreparedStatement
-   ↓
-SQL injection protection
-
-User ID ownership checks
-   ↓
-Authorization
-
-UUID session tokens
-   ↓
-Session protection
-
-Login attempt tracking
-   ↓
-Brute-force protection
-
-Security logging
-   ↓
-Security monitoring
-
-JUnit tests
-   ↓
-Security verification
-```
+- BCrypt for password protection
+- PreparedStatement for SQL injection protection
+- Input validation for invalid input
+- User ID ownership checks for authorization
+- UUID session tokens for session protection
+- Login attempt tracking for brute-force protection
+- Security logging for security monitoring
+- Log sanitization for log injection protection
+- JUnit tests for security verification
 
 These controls work together to provide multiple layers of security.
