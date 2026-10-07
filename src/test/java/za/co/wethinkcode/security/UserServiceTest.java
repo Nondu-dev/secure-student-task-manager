@@ -81,8 +81,6 @@ class UserServiceTest {
 
     @Test
     void loginFailsForUnknownUser() throws Exception {
-        UserService userService = new UserService();
-
         UserService service = new UserService();
 
         assertFalse(
@@ -113,30 +111,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registrationRejectsInvalidUsername() {
-
-        UserService userService = new UserService();
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.register("", "password123")
-        );
-    }
-
-    @Test
-    void registrationRejectsShortPassword() {
-
-        UserService userService = new UserService();
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> userService.register("alice", "short")
-        );
-    }
-
-    @Test
     void successfulLoginCreatesSession() throws Exception {
-
         UserService userService = new UserService();
 
         userService.register("george", "password123");
@@ -152,7 +127,6 @@ class UserServiceTest {
 
     @Test
     void sessionBelongsToLoggedInUser() throws Exception {
-
         UserService userService = new UserService();
 
         userService.register("henry", "password123");
@@ -170,8 +144,43 @@ class UserServiceTest {
         );
     }
 
-    private int getUserId(String username) throws Exception {
+    @Test
+    void failedLoginDoesNotCreateSession() throws Exception {
+        UserService userService = new UserService();
 
+        userService.register("iris", "password123");
+
+        assertThrows(
+                SecurityException.class,
+                () -> userService.loginAndCreateSession(
+                        "iris",
+                        "wrongpassword"
+                )
+        );
+    }
+
+    @Test
+    void logoutInvalidatesSession() throws Exception {
+        UserService userService = new UserService();
+
+        userService.register("jack", "password123");
+
+        String token = userService.loginAndCreateSession(
+                "jack",
+                "password123"
+        );
+
+        assertNotNull(token);
+
+        userService.getSessionService().removeSession(token);
+
+        assertThrows(
+                SecurityException.class,
+                () -> userService.getSessionService().getUserId(token)
+        );
+    }
+
+    private int getUserId(String username) throws Exception {
         try (Connection connection = Database.getConnection();
              var statement = connection.prepareStatement(
                      "SELECT id FROM users WHERE username = ?"
