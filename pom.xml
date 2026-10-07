@@ -26,6 +26,15 @@
             <version>6.7.0</version>
         </dependency>
 
+        
+        <!-- Javalin logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+        
+
         <!-- SQLite database -->
         <dependency>
             <groupId>org.xerial</groupId>

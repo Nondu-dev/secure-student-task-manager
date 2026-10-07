@@ -1,37 +1,97 @@
 # Secure Student Task Manager
 
-A Java web application built to demonstrate practical cybersecurity concepts.
+A Java-based task management application demonstrating practical cybersecurity and secure software development practices.
 
 ## Project Goal
 
-The goal of this project is to build a simple task management application and apply security practices to protect users and their data.
+Build a simple student task manager while protecting user accounts, tasks, sessions, and security logs.
 
-## Planned Security Features
+## Security Features
 
-- Secure password storage
-- User authentication
-- User authorization
+- BCrypt password hashing
+- User registration and authentication
+- User authorization and task ownership
 - Input validation
-- SQL injection protection
-- Secure session handling
-- Login protection
+- SQL injection protection using PreparedStatement
+- UUID session tokens
+- Session expiration
+- Login attempt protection
+- Temporary account lockout
 - Security logging
+- Log injection protection
+- Automated security testing
 
 ## Technologies
 
-- Java
-- Javalin
+- Java 21
+- Maven
 - SQLite
 - JDBC
-- JUnit
-- Maven
-- Git
-- Docker
+- Javalin
+- BCrypt
+- Jackson
+- JUnit 5
+- Git and GitHub
 
-## Cybersecurity Focus
+## Project Structure
 
-The application will be tested for common security weaknesses. Vulnerabilities found during testing will be documented and fixed.
+secure-student-task-manager/
+- docs/
+- src/main/java/za/co/wethinkcode/security/
+- src/test/java/za/co/wethinkcode/security/
+- README.md
+- pom.xml
+- .gitignore
 
-## Status
+## Run the Project
 
-Project setup completed. Development in progress.
+Check Java:
+
+java -version
+
+Check Maven:
+
+mvn -version
+
+Run tests:
+
+mvn test
+
+Build the project:
+
+mvn package
+
+## Security Testing
+
+The project tests:
+
+- Password hashing
+- Authentication
+- Authorization
+- Input validation
+- SQL injection
+- Session security
+- Session expiration
+- Login protection
+- Temporary lockout
+- Security logging
+- Log injection
+- Task ownership
+
+## Documentation
+
+- docs/threat-model.md
+- docs/security-decisions.md
+- docs/security-testing.md
+
+## Known Limitations
+
+- Sessions are stored in memory.
+- Login protection is stored in memory.
+- Security logs are stored locally.
+- IP-based rate limiting is not implemented.
+- Production deployment is not implemented.
+
+## Project Status
+
+Core security functionality has been implemented and tested.
