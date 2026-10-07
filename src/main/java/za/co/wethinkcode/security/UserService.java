@@ -10,6 +10,9 @@ public class UserService {
     private final LoginProtectionService loginProtection =
             new LoginProtectionService();
 
+    private final SecurityLogger securityLogger =
+            new SecurityLogger();
+
     // Register a new user
     public void register(String username, String password) throws Exception {
 
@@ -43,7 +46,15 @@ public class UserService {
 
         // Stop login attempts if the account is blocked
         if (loginProtection.isBlocked(username)) {
-            throw new SecurityException("Too many failed login attempts");
+
+            securityLogger.log(
+                    "ACCOUNT_BLOCKED",
+                    username
+            );
+
+            throw new SecurityException(
+                    "Too many failed login attempts"
+            );
         }
 
         String sql = """
@@ -60,7 +71,14 @@ public class UserService {
             var result = statement.executeQuery();
 
             if (!result.next()) {
+
                 loginProtection.recordFailedAttempt(username);
+
+                securityLogger.log(
+                        "LOGIN_FAILED",
+                        username
+                );
+
                 return false;
             }
 
@@ -70,12 +88,24 @@ public class UserService {
                     PasswordService.checkPassword(password, storedHash);
 
             if (!passwordCorrect) {
+
                 loginProtection.recordFailedAttempt(username);
+
+                securityLogger.log(
+                        "LOGIN_FAILED",
+                        username
+                );
+
                 return false;
             }
 
             // Successful login resets failed attempts
             loginProtection.resetAttempts(username);
+
+            securityLogger.log(
+                    "LOGIN_SUCCESS",
+                    username
+            );
 
             return true;
         }

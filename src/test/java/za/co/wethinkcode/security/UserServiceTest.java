@@ -87,4 +87,25 @@ class UserServiceTest {
                 userService.login("unknown", "password123")
         );
     }
+        @Test
+    void successfulLoginIsLogged() throws Exception {
+        UserService userService = new UserService();
+
+        userService.register("eve", "password123");
+
+        assertTrue(
+                userService.login("eve", "password123")
+        );
+    }
+
+    @Test
+    void failedLoginIsLogged() throws Exception {
+        UserService userService = new UserService();
+
+        userService.register("frank", "password123");
+
+        assertFalse(
+                userService.login("frank", "wrongpassword")
+        );
+    }
 }
