@@ -13,6 +13,9 @@ public class UserService {
     private final SecurityLogger securityLogger =
             new SecurityLogger();
 
+    private final SessionService sessionService =
+            new SessionService();
+
     // Register a new user
     public void register(String username, String password) throws Exception {
 
@@ -118,5 +121,55 @@ public class UserService {
 
             return true;
         }
+    }
+
+    // Login and create a session
+    public String loginAndCreateSession(
+            String username,
+            String password
+    ) throws Exception {
+
+        boolean loginSuccessful = login(username, password);
+
+        if (!loginSuccessful) {
+            throw new SecurityException(
+                    "Invalid username or password"
+            );
+        }
+
+        int userId = getUserId(username);
+
+        return sessionService.createSession(userId);
+    }
+
+    // Get the database ID of a user
+    private int getUserId(String username) throws Exception {
+
+        String sql = """
+                SELECT id
+                FROM users
+                WHERE username = ?
+                """;
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, username);
+
+            var result = statement.executeQuery();
+
+            if (!result.next()) {
+                throw new IllegalArgumentException(
+                        "User not found"
+                );
+            }
+
+            return result.getInt("id");
+        }
+    }
+
+    // Get the session service
+    public SessionService getSessionService() {
+        return sessionService;
     }
 }
