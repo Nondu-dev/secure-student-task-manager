@@ -84,14 +84,14 @@ Invalid or unexpected input can cause security and application problems.
 
 The project uses ValidationService to check:
 
-- Usernames are not empty and are within the allowed length.
-- Passwords are not empty and meet the minimum length.
-- Task titles are not empty and are within the allowed length.
+* Usernames are not empty and are within the allowed length.
+* Passwords are not empty and meet the minimum length.
+* Task titles are not empty and are within the allowed length.
 
 The validation is integrated into:
 
-- User registration
-- Task creation
+* User registration
+* Task creation
 
 ### Security benefit
 
@@ -121,11 +121,37 @@ Invalid or unknown tokens are rejected.
 
 ---
 
-## 7. Login Attempt Protection
+## 7. Session Expiration
+
+### Decision
+
+Give each session a limited lifetime.
+
+The current default session duration is 30 minutes.
+
+### Why
+
+A session token that remains valid forever creates a security risk if the token is stolen.
+
+SessionService stores an expiration time when a session is created.
+
+When the session is used, the application checks whether the session has expired.
+
+### Security benefit
+
+An old or stolen session token will eventually stop working.
+
+This reduces the amount of time an attacker can use a stolen session.
+
+---
+
+## 8. Login Attempt Protection
 
 ### Decision
 
 Block an account after five failed login attempts.
+
+The account is temporarily locked for five minutes.
 
 ### Why
 
@@ -133,17 +159,19 @@ Repeated password guessing is a common attack.
 
 The application counts failed attempts for each username.
 
-After five failed attempts, the account is blocked.
+After five failed attempts, the account is temporarily blocked.
 
-A successful login resets the failed-attempt counter.
+After the five-minute lockout period expires, the account is automatically unlocked and the failed-attempt counter is reset.
+
+A successful login also resets the failed-attempt counter.
 
 ### Security benefit
 
-This makes repeated password guessing more difficult.
+This makes repeated password guessing and brute-force attacks more difficult.
 
 ---
 
-## 8. Security Logging
+## 9. Security Logging
 
 ### Decision
 
@@ -151,9 +179,9 @@ Record important security events in a persistent security.log file.
 
 The application currently records:
 
-- LOGIN_SUCCESS
-- LOGIN_FAILED
-- ACCOUNT_BLOCKED
+* LOGIN_SUCCESS
+* LOGIN_FAILED
+* ACCOUNT_BLOCKED
 
 ### Why
 
@@ -161,7 +189,7 @@ Security events can help identify suspicious activity.
 
 For example, many failed login attempts could indicate that someone is trying to guess a password.
 
-The log is stored in a file so that security events are not lost when the application continues running.
+The log is stored in a file so that security events are not lost while the application is running.
 
 ### Security benefit
 
@@ -169,7 +197,7 @@ The application has a persistent record of important authentication events.
 
 ---
 
-## 9. Log Injection Protection
+## 10. Log Injection Protection
 
 ### Decision
 
@@ -189,7 +217,7 @@ This prevents malicious input from creating fake lines in the security log.
 
 ---
 
-## 10. Automated Security Tests
+## 11. Automated Security Tests
 
 ### Decision
 
@@ -203,14 +231,16 @@ The tests include normal use and simulated attacks.
 
 Examples include:
 
-- Incorrect passwords
-- SQL injection
-- Unauthorized task access
-- Fake session tokens
-- Brute-force login attempts
-- Log injection
+* Incorrect passwords
+* SQL injection
+* Unauthorized task access
+* Fake session tokens
+* Expired sessions
+* Brute-force login attempts
+* Temporary login lockout
+* Log injection
 
-The current test suite contains 49 tests.
+The current test suite contains 51 tests.
 
 ### Security benefit
 
@@ -220,7 +250,7 @@ The tests can also be run again after future changes to make sure existing secur
 
 ---
 
-## 11. Separation of Security Responsibilities
+## 12. Separation of Security Responsibilities
 
 ### Decision
 
@@ -228,13 +258,13 @@ Keep security responsibilities separated into different services.
 
 Examples include:
 
-- PasswordService
-- ValidationService
-- SessionService
-- LoginProtectionService
-- SecurityLogger
-- UserService
-- TaskService
+* PasswordService
+* ValidationService
+* SessionService
+* LoginProtectionService
+* SecurityLogger
+* UserService
+* TaskService
 
 ### Why
 
@@ -248,21 +278,25 @@ Security logic is easier to test and less likely to be mixed into unrelated part
 
 ---
 
-## 12. Known Limitations
+## 13. Known Limitations
 
-The project is still being developed, so some security improvements can be added in future versions.
+The project still has some limitations that could be improved in future versions.
 
-### Session expiration
+### In-memory sessions
 
-Sessions currently do not have an expiration time.
+Session data is currently stored in memory.
 
-A future improvement would be to automatically expire sessions after a period of inactivity.
+If the application is restarted, existing sessions are lost.
 
-### Login blocking duration
+A future version could store sessions in a database or another persistent session store.
 
-The current login protection blocks an account after five failed attempts, but there is no time-based automatic unlock.
+### In-memory login protection
 
-A future version could add a temporary lockout period.
+Failed login attempts and temporary lockout information are currently stored in memory.
+
+If the application restarts, the login protection state is reset.
+
+A future version could store this information persistently.
 
 ### Log monitoring
 
@@ -270,22 +304,30 @@ Security events are stored in the local security.log file.
 
 A future version could send important security events to a centralized monitoring system.
 
+### Distributed login protection
+
+The current login protection is based on usernames.
+
+A future version could also add rate limiting based on IP addresses or other request information.
+
 ---
 
-## 13. Summary
+## 14. Summary
 
 The main security decisions were made to protect the application against common attacks.
 
 The project uses:
 
-- BCrypt for password protection
-- PreparedStatement for SQL injection protection
-- Input validation for invalid input
-- User ID ownership checks for authorization
-- UUID session tokens for session protection
-- Login attempt tracking for brute-force protection
-- Security logging for security monitoring
-- Log sanitization for log injection protection
-- JUnit tests for security verification
+* BCrypt for password protection
+* PreparedStatement for SQL injection protection
+* Input validation for invalid input
+* User ID ownership checks for authorization
+* UUID session tokens for session protection
+* Session expiration to limit session lifetime
+* Login attempt tracking for brute-force protection
+* Temporary login lockout for repeated failed attempts
+* Security logging for security monitoring
+* Log sanitization for log injection protection
+* JUnit tests for security verification
 
 These controls work together to provide multiple layers of security.
