@@ -9,3 +9,6 @@ task-manager.db
 
 # VS Code files
 .vscode/
+
+# Security log
+security.log

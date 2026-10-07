@@ -2,6 +2,9 @@ package za.co.wethinkcode.security;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SecurityLoggerTest {
@@ -55,6 +58,30 @@ class SecurityLoggerTest {
         assertEquals(
                 3,
                 logger.getEvents().size()
+        );
+    }
+
+    @Test
+    void securityEventIsWrittenToLogFile() throws Exception {
+
+        SecurityLogger logger = new SecurityLogger();
+
+        logger.log("LOGIN_FAILED", "alice");
+
+        Path logFile = Path.of("security.log");
+
+        assertTrue(
+                Files.exists(logFile)
+        );
+
+        String content = Files.readString(logFile);
+
+        assertTrue(
+                content.contains("LOGIN_FAILED")
+        );
+
+        assertTrue(
+                content.contains("alice")
         );
     }
 }
