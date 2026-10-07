@@ -63,4 +63,28 @@ class LoginProtectionServiceTest {
                 service.isBlocked("alice")
         );
     }
+
+    @Test
+    void accountIsUnblockedAfterLockoutExpires() throws InterruptedException {
+        LoginProtectionService service = new LoginProtectionService(1);
+
+        for (int i = 0; i < 5; i++) {
+            service.recordFailedAttempt("alice");
+        }
+
+        assertTrue(
+                service.isBlocked("alice")
+        );
+
+        Thread.sleep(1100);
+
+        assertFalse(
+                service.isBlocked("alice")
+        );
+
+        assertEquals(
+                0,
+                service.getFailedAttempts("alice")
+        );
+    }
 }

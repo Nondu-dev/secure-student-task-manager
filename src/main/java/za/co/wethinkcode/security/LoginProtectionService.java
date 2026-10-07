@@ -1,33 +1,62 @@
 package za.co.wethinkcode.security;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LoginProtectionService {
 
     private static final int MAX_FAILED_ATTEMPTS = 5;
+    private final long lockoutDurationSeconds;
 
-    // Store failed login attempts for each username
     private final Map<String, Integer> failedAttempts =
             new ConcurrentHashMap<>();
 
-    // Record a failed login attempt
-    public void recordFailedAttempt(String username) {
-        failedAttempts.merge(username, 1, Integer::sum);
+    private final Map<String, Instant> lockoutTimes =
+            new ConcurrentHashMap<>();
+
+    public LoginProtectionService() {
+        this(300);
     }
 
-    // Get the number of failed attempts
+    LoginProtectionService(long lockoutDurationSeconds) {
+        this.lockoutDurationSeconds = lockoutDurationSeconds;
+    }
+
+    public void recordFailedAttempt(String username) {
+        int attempts = failedAttempts.merge(username, 1, Integer::sum);
+
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            lockoutTimes.put(username, Instant.now());
+        }
+    }
+
     public int getFailedAttempts(String username) {
         return failedAttempts.getOrDefault(username, 0);
     }
 
-    // Check if the account is blocked
     public boolean isBlocked(String username) {
-        return getFailedAttempts(username) >= MAX_FAILED_ATTEMPTS;
+
+        Instant lockoutTime = lockoutTimes.get(username);
+
+        if (lockoutTime == null) {
+            return false;
+        }
+
+        if (Instant.now().isAfter(
+                lockoutTime.plusSeconds(lockoutDurationSeconds))) {
+
+            lockoutTimes.remove(username);
+            failedAttempts.remove(username);
+
+            return false;
+        }
+
+        return true;
     }
 
-    // Reset attempts after a successful login
     public void resetAttempts(String username) {
         failedAttempts.remove(username);
+        lockoutTimes.remove(username);
     }
 }
