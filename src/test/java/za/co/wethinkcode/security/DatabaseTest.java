@@ -16,4 +16,9 @@ class DatabaseTest {
 
         connection.close();
     }
+
+    @Test
+    void databaseCanBeInitialized() throws Exception {
+        Database.initialize();
+    }
 }

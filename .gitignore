@@ -1,0 +1,11 @@
+# Maven build files
+target/
+
+# Local SQLite database
+task-manager.db
+
+# IntelliJ files
+.idea/
+
+# VS Code files
+.vscode/
