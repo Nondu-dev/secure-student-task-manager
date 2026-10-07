@@ -7,6 +7,9 @@ import java.time.Instant;
 
 public class UserService {
 
+    private final LoginProtectionService loginProtection =
+            new LoginProtectionService();
+
     // Register a new user
     public void register(String username, String password) throws Exception {
 
@@ -34,8 +37,14 @@ public class UserService {
             throw exception;
         }
     }
-        // Check user login details
+
+    // Check user login details
     public boolean login(String username, String password) throws Exception {
+
+        // Stop login attempts if the account is blocked
+        if (loginProtection.isBlocked(username)) {
+            throw new SecurityException("Too many failed login attempts");
+        }
 
         String sql = """
                 SELECT password_hash
@@ -51,12 +60,24 @@ public class UserService {
             var result = statement.executeQuery();
 
             if (!result.next()) {
+                loginProtection.recordFailedAttempt(username);
                 return false;
             }
 
             String storedHash = result.getString("password_hash");
 
-            return PasswordService.checkPassword(password, storedHash);
+            boolean passwordCorrect =
+                    PasswordService.checkPassword(password, storedHash);
+
+            if (!passwordCorrect) {
+                loginProtection.recordFailedAttempt(username);
+                return false;
+            }
+
+            // Successful login resets failed attempts
+            loginProtection.resetAttempts(username);
+
+            return true;
         }
     }
 }
