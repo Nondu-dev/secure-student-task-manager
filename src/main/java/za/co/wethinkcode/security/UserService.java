@@ -16,6 +16,15 @@ public class UserService {
     // Register a new user
     public void register(String username, String password) throws Exception {
 
+        // Validate user input
+        if (!ValidationService.isValidUsername(username)) {
+            throw new IllegalArgumentException("Invalid username");
+        }
+
+        if (!ValidationService.isValidPassword(password)) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
         String passwordHash = PasswordService.hashPassword(password);
 
         String sql = """

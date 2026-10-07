@@ -8,7 +8,16 @@ import java.time.Instant;
 public class TaskService {
 
     // Create a task for a user
-    public int createTask(int userId, String title, String description) throws Exception {
+    public int createTask(
+            int userId,
+            String title,
+            String description
+    ) throws Exception {
+
+        // Validate task title
+        if (!ValidationService.isValidTaskTitle(title)) {
+            throw new IllegalArgumentException("Invalid task title");
+        }
 
         String sql = """
                 INSERT INTO tasks (user_id, title, description, created_at)
@@ -62,7 +71,9 @@ public class TaskService {
 
             // Security check
             if (taskOwnerId != userId) {
-                throw new SecurityException("You are not allowed to access this task");
+                throw new SecurityException(
+                        "You are not allowed to access this task"
+                );
             }
 
             return result.getString("title");

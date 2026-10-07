@@ -79,4 +79,24 @@ class TaskServiceTest {
             return result.getInt("id");
         }
     }
+    @Test
+void taskCreationRejectsEmptyTitle() throws Exception {
+
+    UserService userService = new UserService();
+
+    userService.register("alice", "password123");
+
+    int aliceId = getUserId("alice");
+
+    TaskService taskService = new TaskService();
+
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> taskService.createTask(
+                    aliceId,
+                    "",
+                    "Private task"
+            )
+    );
+}
 }

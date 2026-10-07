@@ -108,4 +108,25 @@ class UserServiceTest {
                 userService.login("frank", "wrongpassword")
         );
     }
+    @Test
+void registrationRejectsInvalidUsername() {
+
+    UserService userService = new UserService();
+
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.register("", "password123")
+    );
+}
+
+@Test
+void registrationRejectsShortPassword() {
+
+    UserService userService = new UserService();
+
+    assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.register("alice", "short")
+    );
+}
 }
