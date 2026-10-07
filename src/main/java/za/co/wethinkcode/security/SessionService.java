@@ -1,37 +1,54 @@
 package za.co.wethinkcode.security;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionService {
 
-    // Store session tokens and their users
-    private final Map<String, Integer> sessions = new ConcurrentHashMap<>();
+    private final long sessionDurationSeconds;
 
-    // Create a secure random session token
+    private final Map<String, Session> sessions = new ConcurrentHashMap<>();
+
+    public SessionService() {
+        this(1800);
+    }
+
+    SessionService(long sessionDurationSeconds) {
+        this.sessionDurationSeconds = sessionDurationSeconds;
+    }
+
     public String createSession(int userId) {
         String token = UUID.randomUUID().toString();
 
-        sessions.put(token, userId);
+        Instant expiryTime = Instant.now().plusSeconds(sessionDurationSeconds);
+
+        sessions.put(token, new Session(userId, expiryTime));
 
         return token;
     }
 
-    // Get the user linked to a session
     public int getUserId(String token) {
 
-        Integer userId = sessions.get(token);
+        Session session = sessions.get(token);
 
-        if (userId == null) {
+        if (session == null) {
             throw new SecurityException("Invalid session");
         }
 
-        return userId;
+        if (Instant.now().isAfter(session.expiryTime())) {
+            sessions.remove(token);
+            throw new SecurityException("Session expired");
+        }
+
+        return session.userId();
     }
 
-    // Remove a session during logout
     public void removeSession(String token) {
         sessions.remove(token);
+    }
+
+    private record Session(int userId, Instant expiryTime) {
     }
 }

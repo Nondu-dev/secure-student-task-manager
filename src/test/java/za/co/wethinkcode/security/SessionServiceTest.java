@@ -61,4 +61,20 @@ class SessionServiceTest {
                 () -> sessionService.getUserId(token)
         );
     }
+
+    @Test
+    void expiredSessionIsRejected() throws InterruptedException {
+        SessionService sessionService = new SessionService(1);
+
+        String token = sessionService.createSession(1);
+
+        Thread.sleep(1100);
+
+        SecurityException exception = assertThrows(
+                SecurityException.class,
+                () -> sessionService.getUserId(token)
+        );
+
+        assertEquals("Session expired", exception.getMessage());
+    }
 }
