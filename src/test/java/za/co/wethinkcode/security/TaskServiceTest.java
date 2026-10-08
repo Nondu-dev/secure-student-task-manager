@@ -1,23 +1,12 @@
 package za.co.wethinkcode.security;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TaskServiceTest {
-
-    @BeforeEach
-    void cleanDatabase() throws Exception {
-        try (Connection connection = Database.getConnection();
-             var statement = connection.createStatement()) {
-
-            statement.executeUpdate("DELETE FROM tasks");
-            statement.executeUpdate("DELETE FROM users");
-        }
-    }
+class TaskServiceTest extends TestDatabase {
 
     @Test
     void userCanAccessOwnTask() throws Exception {

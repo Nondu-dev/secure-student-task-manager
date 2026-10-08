@@ -6,15 +6,14 @@ import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class DatabaseTest {
+class DatabaseTest extends TestDatabase {
 
     @Test
     void databaseConnectionWorks() throws Exception {
-        Connection connection = Database.getConnection();
 
-        assertNotNull(connection);
-
-        connection.close();
+        try (Connection connection = Database.getConnection()) {
+            assertNotNull(connection);
+        }
     }
 
     @Test

@@ -1,22 +1,14 @@
 package za.co.wethinkcode.security;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTest {
+class UserServiceTest extends TestDatabase {
 
-    @BeforeEach
-    void cleanUsersTable() throws Exception {
-        try (Connection connection = Database.getConnection();
-             var statement = connection.createStatement()) {
-
-            statement.executeUpdate("DELETE FROM users");
-        }
-    }
+  
 
     @Test
     void userCanBeRegistered() throws Exception {

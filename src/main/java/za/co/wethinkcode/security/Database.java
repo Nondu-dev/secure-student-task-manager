@@ -7,21 +7,30 @@ import java.sql.Statement;
 
 public class Database {
 
-    // SQLite database file
-    private static final String DATABASE_URL = "jdbc:sqlite:task-manager.db";
+    private static String databaseFile = "task-manager.db";
 
-    // Connect to the database
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DATABASE_URL);
+    private Database() {
     }
 
-    // Create the database tables
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                "jdbc:sqlite:" + databaseFile
+        );
+    }
+
+    public static void useDatabase(String fileName) {
+        databaseFile = fileName;
+    }
+
+    public static void useApplicationDatabase() {
+        databaseFile = "task-manager.db";
+    }
+
     public static void initialize() throws SQLException {
 
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
 
-            // Store registered users
             String createUsersTable = """
                     CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +42,6 @@ public class Database {
 
             statement.execute(createUsersTable);
 
-            // Store tasks belonging to users
             String createTasksTable = """
                     CREATE TABLE IF NOT EXISTS tasks (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,

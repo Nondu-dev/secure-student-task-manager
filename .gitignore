@@ -1,8 +1,9 @@
 # Maven build files
 target/
 
-# Local SQLite database
+# Local SQLite databases
 task-manager.db
+test-task-manager.db
 
 # IntelliJ files
 .idea/
