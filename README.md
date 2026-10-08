@@ -4,7 +4,15 @@ A Java-based task management application demonstrating practical cybersecurity a
 
 ## Project Goal
 
-Build a simple student task manager while protecting user accounts, tasks, sessions, and security logs.
+The goal of this project is to build a simple student task manager while protecting:
+
+- User accounts
+- Passwords
+- Tasks
+- Sessions
+- Security logs
+
+The project focuses on implementing common cybersecurity controls in a practical Java application.
 
 ## Security Features
 
@@ -19,6 +27,7 @@ Build a simple student task manager while protecting user accounts, tasks, sessi
 - Temporary account lockout
 - Security logging
 - Log injection protection
+- Javalin Web API
 - Automated security testing
 
 ## Technologies
@@ -35,63 +44,83 @@ Build a simple student task manager while protecting user accounts, tasks, sessi
 
 ## Project Structure
 
-secure-student-task-manager/
-- docs/
-- src/main/java/za/co/wethinkcode/security/
-- src/test/java/za/co/wethinkcode/security/
-- README.md
-- pom.xml
-- .gitignore
+    secure-student-task-manager/
+    ├── docs/
+    ├── src/
+    │   ├── main/
+    │   │   └── java/
+    │   │       └── za/co/wethinkcode/security/
+    │   └── test/
+    │       └── java/
+    │           └── za/co/wethinkcode/security/
+    ├── README.md
+    ├── pom.xml
+    └── .gitignore
+
+## How Security Works
+
+### Password Security
+
+Passwords are hashed using BCrypt before they are stored in the database.
+
+The application never stores user passwords as plain text.
+
+### Authentication
+
+Users must provide a valid username and password to log in.
+
+Incorrect passwords and unknown users are rejected.
+
+### Authorization
+
+Users can access their own tasks but cannot access tasks belonging to another user.
+
+The application checks the task owner's user_id against the logged-in user's ID.
+
+### SQL Injection Protection
+
+Database queries use PreparedStatement with parameters instead of building SQL statements using string concatenation.
+
+### Session Security
+
+Successful login creates a UUID session token.
+
+Sessions expire after a period of inactivity, and invalid or expired sessions are rejected.
+
+### Login Protection
+
+Repeated failed login attempts are tracked.
+
+After five failed attempts, the account is temporarily blocked.
+
+### Security Logging
+
+Important security events are recorded, including:
+
+- LOGIN_SUCCESS
+- LOGIN_FAILED
+- ACCOUNT_BLOCKED
+
+Usernames are sanitized before being written to the security log to prevent log injection.
 
 ## Run the Project
 
-Check Java:
+Run the tests:
 
-java -version
+    mvn clean test
 
-Check Maven:
+Start the Web API:
 
-mvn -version
+    mvn exec:java "-Dexec.mainClass=za.co.wethinkcode.security.Main"
 
-Run tests:
+The API runs on:
 
-mvn test
-
-Build the project:
-
-mvn package
-
-## Security Testing
-
-The project tests:
-
-- Password hashing
-- Authentication
-- Authorization
-- Input validation
-- SQL injection
-- Session security
-- Session expiration
-- Login protection
-- Temporary lockout
-- Security logging
-- Log injection
-- Task ownership
+    http://localhost:7077
 
 ## Documentation
+
+Security documentation is available in:
 
 - docs/threat-model.md
 - docs/security-decisions.md
 - docs/security-testing.md
-
-## Known Limitations
-
-- Sessions are stored in memory.
-- Login protection is stored in memory.
-- Security logs are stored locally.
-- IP-based rate limiting is not implemented.
-- Production deployment is not implemented.
-
-## Project Status
-
-Core security functionality has been implemented and tested.
