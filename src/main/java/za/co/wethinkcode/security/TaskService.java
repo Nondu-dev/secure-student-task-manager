@@ -7,14 +7,12 @@ import java.time.Instant;
 
 public class TaskService {
 
-    // Create a task for a user
     public int createTask(
             int userId,
             String title,
             String description
     ) throws Exception {
 
-        // Validate task title
         if (!ValidationService.isValidTaskTitle(title)) {
             throw new IllegalArgumentException("Invalid task title");
         }
@@ -47,7 +45,6 @@ public class TaskService {
         }
     }
 
-    // Get a task only if it belongs to the logged-in user
     public String getTask(int taskId, int userId) throws Exception {
 
         String sql = """
@@ -64,14 +61,16 @@ public class TaskService {
             var result = statement.executeQuery();
 
             if (!result.next()) {
-                throw new IllegalArgumentException("Task not found");
+                throw new IllegalArgumentException(
+                        "Task not found"
+                );
             }
 
-            int taskOwnerId = result.getInt("user_id");
+            int taskOwnerId =
+                    result.getInt("user_id");
 
-            // Security check
             if (taskOwnerId != userId) {
-                throw new SecurityException(
+                throw new AuthorizationException(
                         "You are not allowed to access this task"
                 );
             }
