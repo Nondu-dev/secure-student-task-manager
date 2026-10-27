@@ -6,13 +6,16 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        // Prepare the database before starting the API.
         Database.initialize();
 
         UserService userService = new UserService();
         TaskService taskService = new TaskService();
 
+        // Create the web server.
         Javalin app = Javalin.create();
 
+        // Register a new user.
         app.post("/register", ctx -> {
 
             try {
@@ -30,12 +33,12 @@ public class Main {
 
             } catch (IllegalArgumentException e) {
 
-                ctx.status(400).result(
-                        e.getMessage()
-                );
+                // Return an error if registration data is invalid.
+                ctx.status(400).result(e.getMessage());
             }
         });
 
+        // Log in a user and create a session token.
         app.post("/login", ctx -> {
 
             try {
@@ -48,16 +51,57 @@ public class Main {
                                 request.password()
                         );
 
+                // The client uses this token for protected requests.
                 ctx.status(200).result(token);
 
             } catch (SecurityException e) {
 
+                // Do not reveal whether the username or password was wrong.
                 ctx.status(401).result(
                         "Invalid username or password"
                 );
             }
         });
 
+        // Log out a user by invalidating their session token.
+        app.post("/logout", ctx -> {
+
+            String authorization =
+                    ctx.header("Authorization");
+
+            // A valid Bearer header is required.
+            if (authorization == null ||
+                    !authorization.startsWith("Bearer ")) {
+
+                ctx.status(401).result(
+                        "Missing or invalid authorization"
+                );
+
+                return;
+            }
+
+            String token = authorization.substring(7);
+
+            try {
+                // Check that the session exists and has not expired.
+                userService.getSessionService().getUserId(token);
+
+                // Remove the session so the token can no longer be used.
+                userService.getSessionService().removeSession(token);
+
+                ctx.status(200).result(
+                        "Logged out successfully"
+                );
+
+            } catch (SecurityException e) {
+
+                ctx.status(401).result(
+                        "Invalid or expired session"
+                );
+            }
+        });
+
+        // Create a task for the logged-in user.
         app.post("/tasks", ctx -> {
 
             String authorization =
@@ -74,9 +118,9 @@ public class Main {
             }
 
             try {
-                String token =
-                        authorization.substring(7);
+                String token = authorization.substring(7);
 
+                // Identify the user through their session.
                 int userId =
                         userService.getSessionService()
                                 .getUserId(token);
@@ -103,12 +147,11 @@ public class Main {
 
             } catch (IllegalArgumentException e) {
 
-                ctx.status(400).result(
-                        e.getMessage()
-                );
+                ctx.status(400).result(e.getMessage());
             }
         });
 
+        // Retrieve a task, but only if the logged-in user owns it.
         app.get("/tasks/{id}", ctx -> {
 
             String authorization =
@@ -125,43 +168,32 @@ public class Main {
             }
 
             try {
-                String token =
-                        authorization.substring(7);
+                String token = authorization.substring(7);
 
                 int userId =
                         userService.getSessionService()
                                 .getUserId(token);
 
                 int taskId =
-                        Integer.parseInt(
-                                ctx.pathParam("id")
-                        );
+                        Integer.parseInt(ctx.pathParam("id"));
 
                 String task =
-                        taskService.getTask(
-                                taskId,
-                                userId
-                        );
+                        taskService.getTask(taskId, userId);
 
                 ctx.status(200).result(task);
 
             } catch (AuthorizationException e) {
 
-                ctx.status(403).result(
-                        e.getMessage()
-                );
+                // The user is logged in but does not own this task.
+                ctx.status(403).result(e.getMessage());
 
             } catch (NumberFormatException e) {
 
-                ctx.status(400).result(
-                        "Invalid task ID"
-                );
+                ctx.status(400).result("Invalid task ID");
 
             } catch (IllegalArgumentException e) {
 
-                ctx.status(404).result(
-                        "Task not found"
-                );
+                ctx.status(404).result("Task not found");
 
             } catch (SecurityException e) {
 
@@ -171,6 +203,7 @@ public class Main {
             }
         });
 
+        // Start the API on port 7077.
         app.start(7077);
 
         System.out.println(
@@ -178,18 +211,21 @@ public class Main {
         );
     }
 
+    // Request body for registration.
     private record RegisterRequest(
             String username,
             String password
     ) {
     }
 
+    // Request body for login.
     private record LoginRequest(
             String username,
             String password
     ) {
     }
 
+    // Request body for creating a task.
     private record TaskRequest(
             String title,
             String description
