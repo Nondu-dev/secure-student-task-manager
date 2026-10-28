@@ -2,13 +2,16 @@ package za.co.wethinkcode.security;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link UserService}: registration, login, sessions and logout.
+ */
 class UserServiceTest extends TestDatabase {
-
-  
 
     @Test
     void userCanBeRegistered() throws Exception {
@@ -86,9 +89,16 @@ class UserServiceTest extends TestDatabase {
 
         userService.register("eve", "password123");
 
+        String logBefore = readSecurityLog();
+
         assertTrue(
                 userService.login("eve", "password123")
         );
+
+        // Only look at what was added by this login.
+        String newEntries = readSecurityLog().substring(logBefore.length());
+
+        assertTrue(newEntries.contains("LOGIN_SUCCESS | eve"));
     }
 
     @Test
@@ -97,9 +107,15 @@ class UserServiceTest extends TestDatabase {
 
         userService.register("frank", "password123");
 
+        String logBefore = readSecurityLog();
+
         assertFalse(
                 userService.login("frank", "wrongpassword")
         );
+
+        String newEntries = readSecurityLog().substring(logBefore.length());
+
+        assertTrue(newEntries.contains("LOGIN_FAILED | frank"));
     }
 
     @Test
@@ -170,6 +186,13 @@ class UserServiceTest extends TestDatabase {
                 SecurityException.class,
                 () -> userService.getSessionService().getUserId(token)
         );
+    }
+
+    // Reads security.log (empty text if the file does not exist yet).
+    private String readSecurityLog() throws Exception {
+        Path logFile = Path.of("security.log");
+
+        return Files.exists(logFile) ? Files.readString(logFile) : "";
     }
 
     private int getUserId(String username) throws Exception {

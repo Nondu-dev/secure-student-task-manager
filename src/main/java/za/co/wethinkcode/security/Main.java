@@ -2,6 +2,11 @@ package za.co.wethinkcode.security;
 
 import io.javalin.Javalin;
 
+/**
+ * Starts the web API on port 7077. Endpoints: POST /register, POST /login,
+ * POST /logout, POST /tasks and GET /tasks/{id}. Protected endpoints need the
+ * header "Authorization: Bearer <token>".
+ */
 public class Main {
 
     public static void main(String[] args) throws Exception {
@@ -185,6 +190,7 @@ public class Main {
             } catch (AuthorizationException e) {
 
                 // The user is logged in but does not own this task.
+                // (Caught before SecurityException because it is a subclass of it.)
                 ctx.status(403).result(e.getMessage());
 
             } catch (NumberFormatException e) {

@@ -4,8 +4,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link PasswordService}: BCrypt hashing and checking.
+ */
 class PasswordServiceTest {
 
+    // The hash exists and is not the plain password.
     @Test
     void passwordCanBeHashed() {
         String password = "password123";
@@ -16,6 +20,7 @@ class PasswordServiceTest {
         assertNotEquals(password, hash);
     }
 
+    // The right password matches its hash.
     @Test
     void correctPasswordMatchesHash() {
         String password = "password123";
@@ -25,6 +30,7 @@ class PasswordServiceTest {
         assertTrue(PasswordService.checkPassword(password, hash));
     }
 
+    // A wrong password does not match the hash.
     @Test
     void incorrectPasswordDoesNotMatchHash() {
         String password = "password123";
@@ -34,6 +40,7 @@ class PasswordServiceTest {
         assertFalse(PasswordService.checkPassword("wrongpassword", hash));
     }
 
+    // Each hash uses a random salt, so the same password gives different hashes.
     @Test
     void samePasswordProducesDifferentHashes() {
         String password = "password123";

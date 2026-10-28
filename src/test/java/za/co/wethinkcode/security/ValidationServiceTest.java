@@ -4,8 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link ValidationService}: input validation rules for
+ * usernames, passwords and task titles.
+ */
 class ValidationServiceTest {
 
+    // A normal username is accepted.
     @Test
     void validUsernameIsAccepted() {
         assertTrue(
@@ -13,6 +18,7 @@ class ValidationServiceTest {
         );
     }
 
+    // An empty username is rejected.
     @Test
     void emptyUsernameIsRejected() {
         assertFalse(
@@ -20,6 +26,7 @@ class ValidationServiceTest {
         );
     }
 
+    // A username with only spaces counts as blank and is rejected.
     @Test
     void usernameWithOnlySpacesIsRejected() {
         assertFalse(
@@ -27,6 +34,7 @@ class ValidationServiceTest {
         );
     }
 
+    // A password of 8 or more characters is accepted.
     @Test
     void validPasswordIsAccepted() {
         assertTrue(
@@ -34,6 +42,7 @@ class ValidationServiceTest {
         );
     }
 
+    // An empty password is rejected.
     @Test
     void emptyPasswordIsRejected() {
         assertFalse(
@@ -41,6 +50,7 @@ class ValidationServiceTest {
         );
     }
 
+    // A normal task title is accepted.
     @Test
     void validTaskTitleIsAccepted() {
         assertTrue(
@@ -48,6 +58,7 @@ class ValidationServiceTest {
         );
     }
 
+    // An empty task title is rejected.
     @Test
     void emptyTaskTitleIsRejected() {
         assertFalse(
@@ -55,6 +66,7 @@ class ValidationServiceTest {
         );
     }
 
+    // A task title with only spaces counts as blank and is rejected.
     @Test
     void taskTitleWithOnlySpacesIsRejected() {
         assertFalse(

@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Records security events (LOGIN_SUCCESS, LOGIN_FAILED, ACCOUNT_BLOCKED) in
+ * memory and in security.log. Usernames are cleaned first to prevent log injection.
+ */
 public class SecurityLogger {
 
     private static final Path LOG_FILE =

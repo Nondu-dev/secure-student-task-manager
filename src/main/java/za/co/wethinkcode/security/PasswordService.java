@@ -2,6 +2,7 @@ package za.co.wethinkcode.security;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+/** Hashes and checks passwords with BCrypt, so plain passwords are never stored. */
 public class PasswordService {
 
     // Hash a password before storing it

@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 
+/**
+ * Registers and logs in users, combining validation, password hashing,
+ * login protection, security logging and session creation.
+ */
 public class UserService {
 
     private final LoginProtectionService loginProtection =
@@ -45,6 +49,7 @@ public class UserService {
             statement.executeUpdate();
 
         } catch (SQLException exception) {
+            // The username column is UNIQUE, so a duplicate triggers this error.
             if (exception.getMessage().contains("UNIQUE")) {
                 throw new IllegalArgumentException("Username already exists");
             }
@@ -131,6 +136,7 @@ public class UserService {
 
         boolean loginSuccessful = login(username, password);
 
+        // Same message for a wrong username and a wrong password, so attackers cannot tell which was wrong.
         if (!loginSuccessful) {
             throw new SecurityException(
                     "Invalid username or password"

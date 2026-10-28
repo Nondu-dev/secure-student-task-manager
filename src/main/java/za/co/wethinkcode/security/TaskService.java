@@ -5,6 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 
+/**
+ * Creates tasks and returns them only to their owner. All SQL uses
+ * PreparedStatement to prevent SQL injection.
+ */
 public class TaskService {
 
     public int createTask(
@@ -69,6 +73,7 @@ public class TaskService {
             int taskOwnerId =
                     result.getInt("user_id");
 
+            // Ownership check: only the task's owner may read it.
             if (taskOwnerId != userId) {
                 throw new AuthorizationException(
                         "You are not allowed to access this task"

@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Issues random UUID session tokens that expire after 30 minutes.
+ * Sessions are kept in memory, so they are lost when the server restarts.
+ */
 public class SessionService {
 
     private final long sessionDurationSeconds;
@@ -15,6 +19,7 @@ public class SessionService {
         this(1800);
     }
 
+    // Package-private so tests can use a very short session.
     SessionService(long sessionDurationSeconds) {
         this.sessionDurationSeconds = sessionDurationSeconds;
     }

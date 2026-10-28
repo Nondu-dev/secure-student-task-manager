@@ -6,8 +6,13 @@ import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link TaskService}: creating tasks, task ownership and
+ * title validation.
+ */
 class TaskServiceTest extends TestDatabase {
 
+    // A user can create a task and read it back.
     @Test
     void userCanAccessOwnTask() throws Exception {
         UserService userService = new UserService();
@@ -29,6 +34,7 @@ class TaskServiceTest extends TestDatabase {
         );
     }
 
+    // A user must not be able to read someone else's task.
     @Test
     void userCannotAccessAnotherUsersTask() throws Exception {
         UserService userService = new UserService();
@@ -53,6 +59,29 @@ class TaskServiceTest extends TestDatabase {
         );
     }
 
+    // An empty title is invalid, so task creation must fail.
+    @Test
+    void taskCreationRejectsEmptyTitle() throws Exception {
+
+        UserService userService = new UserService();
+
+        userService.register("alice", "password123");
+
+        int aliceId = getUserId("alice");
+
+        TaskService taskService = new TaskService();
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> taskService.createTask(
+                        aliceId,
+                        "",
+                        "Private task"
+                )
+        );
+    }
+
+    // Helper: finds a user's database ID.
     private int getUserId(String username) throws Exception {
         try (Connection connection = Database.getConnection();
              var statement = connection.prepareStatement(
@@ -68,24 +97,4 @@ class TaskServiceTest extends TestDatabase {
             return result.getInt("id");
         }
     }
-    @Test
-void taskCreationRejectsEmptyTitle() throws Exception {
-
-    UserService userService = new UserService();
-
-    userService.register("alice", "password123");
-
-    int aliceId = getUserId("alice");
-
-    TaskService taskService = new TaskService();
-
-    assertThrows(
-            IllegalArgumentException.class,
-            () -> taskService.createTask(
-                    aliceId,
-                    "",
-                    "Private task"
-            )
-    );
-}
 }

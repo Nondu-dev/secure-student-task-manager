@@ -4,6 +4,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Brute-force protection: after 5 failed logins an account is blocked for
+ * 5 minutes. Concurrent maps are used because requests run on several threads.
+ */
 public class LoginProtectionService {
 
     private static final int MAX_FAILED_ATTEMPTS = 5;
@@ -19,6 +23,7 @@ public class LoginProtectionService {
         this(300);
     }
 
+    // Package-private so tests can use a very short lockout.
     LoginProtectionService(long lockoutDurationSeconds) {
         this.lockoutDurationSeconds = lockoutDurationSeconds;
     }
@@ -43,6 +48,7 @@ public class LoginProtectionService {
             return false;
         }
 
+        // Lockout period is over: unblock the account and start fresh.
         if (Instant.now().isAfter(
                 lockoutTime.plusSeconds(lockoutDurationSeconds))) {
 

@@ -4,8 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link SessionService}: creating, checking, expiring and
+ * removing sessions.
+ */
 class SessionServiceTest {
 
+    // A new session returns a non-empty token.
     @Test
     void sessionCanBeCreated() {
         SessionService sessionService = new SessionService();
@@ -16,6 +21,7 @@ class SessionServiceTest {
         assertFalse(token.isBlank());
     }
 
+    // The token maps back to the user it was created for.
     @Test
     void sessionReturnsCorrectUser() {
         SessionService sessionService = new SessionService();
@@ -28,6 +34,7 @@ class SessionServiceTest {
         );
     }
 
+    // Every session gets its own unique token.
     @Test
     void differentSessionsHaveDifferentTokens() {
         SessionService sessionService = new SessionService();
@@ -38,6 +45,7 @@ class SessionServiceTest {
         assertNotEquals(token1, token2);
     }
 
+    // A token that was never issued is rejected.
     @Test
     void invalidTokenIsRejected() {
         SessionService sessionService = new SessionService();
@@ -48,6 +56,7 @@ class SessionServiceTest {
         );
     }
 
+    // After logout (removeSession) the token no longer works.
     @Test
     void sessionCanBeLoggedOut() {
         SessionService sessionService = new SessionService();
@@ -62,12 +71,14 @@ class SessionServiceTest {
         );
     }
 
+    // Uses a 1-second session, waits for it to expire, then checks it is rejected.
     @Test
     void expiredSessionIsRejected() throws InterruptedException {
         SessionService sessionService = new SessionService(1);
 
         String token = sessionService.createSession(1);
 
+        // Wait a little longer than the 1-second session length.
         Thread.sleep(1100);
 
         SecurityException exception = assertThrows(

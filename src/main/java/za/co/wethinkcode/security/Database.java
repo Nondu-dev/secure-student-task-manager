@@ -5,6 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Opens SQLite connections and creates the tables. The database file can be
+ * switched so tests use their own database instead of the real one.
+ */
 public class Database {
 
     private static String databaseFile = "task-manager.db";
@@ -42,6 +46,7 @@ public class Database {
 
             statement.execute(createUsersTable);
 
+            // Each task belongs to one user (user_id), which makes ownership checks possible.
             String createTasksTable = """
                     CREATE TABLE IF NOT EXISTS tasks (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -6,8 +6,14 @@ import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SecurityAttackTest extends TestDatabase{
+/**
+ * Simulates simple attacks to prove the security controls work:
+ * reading another user's task, using a fake session token, and
+ * SQL injection on login.
+ */
+class SecurityAttackTest extends TestDatabase {
 
+    // Bob (a different user) must not be able to read Alice's private task.
     @Test
     void userCannotAccessAnotherUsersTask() throws Exception {
 
@@ -27,12 +33,14 @@ class SecurityAttackTest extends TestDatabase{
                 "Alice's private information"
         );
 
+        // AuthorizationException is a SecurityException, so this passes.
         assertThrows(
                 SecurityException.class,
                 () -> taskService.getTask(aliceTaskId, bobId)
         );
     }
 
+    // A made-up session token must be rejected.
     @Test
     void invalidSessionCannotAccessUser() {
 
@@ -46,6 +54,7 @@ class SecurityAttackTest extends TestDatabase{
         );
     }
 
+    // SQL injection text as a username must not bypass login.
     @Test
     void sqlInjectionCannotBypassLogin() throws Exception {
 
@@ -61,6 +70,7 @@ class SecurityAttackTest extends TestDatabase{
         );
     }
 
+    // Helper: finds a user's database ID (the real code keeps this private).
     private int getUserId(String username) throws Exception {
 
         try (Connection connection = Database.getConnection();

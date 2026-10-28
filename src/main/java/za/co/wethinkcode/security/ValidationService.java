@@ -1,5 +1,6 @@
 package za.co.wethinkcode.security;
 
+/** Validates user input (username, password, task title) before it is used. */
 public class ValidationService {
 
     // Check username

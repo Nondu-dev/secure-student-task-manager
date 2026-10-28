@@ -4,8 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link LoginProtectionService}: counting failed logins and
+ * temporarily blocking accounts.
+ */
 class LoginProtectionServiceTest {
 
+    // Each failed attempt is counted.
     @Test
     void failedAttemptsAreTracked() {
         LoginProtectionService service = new LoginProtectionService();
@@ -19,6 +24,7 @@ class LoginProtectionServiceTest {
         );
     }
 
+    // The 5th failed attempt blocks the account.
     @Test
     void accountIsBlockedAfterFiveFailedAttempts() {
         LoginProtectionService service = new LoginProtectionService();
@@ -32,6 +38,7 @@ class LoginProtectionServiceTest {
         );
     }
 
+    // 4 failed attempts is still under the limit, so no block yet.
     @Test
     void accountIsNotBlockedBeforeFiveFailedAttempts() {
         LoginProtectionService service = new LoginProtectionService();
@@ -45,6 +52,7 @@ class LoginProtectionServiceTest {
         );
     }
 
+    // resetAttempts() (used after a successful login) clears the counter.
     @Test
     void successfulLoginResetsFailedAttempts() {
         LoginProtectionService service = new LoginProtectionService();
@@ -64,6 +72,7 @@ class LoginProtectionServiceTest {
         );
     }
 
+    // Uses a 1-second lockout to check the account unblocks itself.
     @Test
     void accountIsUnblockedAfterLockoutExpires() throws InterruptedException {
         LoginProtectionService service = new LoginProtectionService(1);
@@ -72,12 +81,15 @@ class LoginProtectionServiceTest {
             service.recordFailedAttempt("alice");
         }
 
+        // Blocked right after the 5th failure.
         assertTrue(
                 service.isBlocked("alice")
         );
 
+        // Wait a little longer than the 1-second lockout.
         Thread.sleep(1100);
 
+        // The block is lifted and the counter is reset.
         assertFalse(
                 service.isBlocked("alice")
         );
