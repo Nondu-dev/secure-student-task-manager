@@ -1,6 +1,7 @@
 package za.co.wethinkcode.security;
 
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 
 /**
  * Starts the web API on port 7077. Endpoints: POST /register, POST /login,
@@ -25,7 +26,7 @@ public class Main {
 
             try {
                 RegisterRequest request =
-                        ctx.bodyAsClass(RegisterRequest.class);
+                        readBody(ctx, RegisterRequest.class);
 
                 userService.register(
                         request.username(),
@@ -48,7 +49,7 @@ public class Main {
 
             try {
                 LoginRequest request =
-                        ctx.bodyAsClass(LoginRequest.class);
+                        readBody(ctx, LoginRequest.class);
 
                 String token =
                         userService.loginAndCreateSession(
@@ -65,6 +66,11 @@ public class Main {
                 ctx.status(401).result(
                         "Invalid username or password"
                 );
+
+            } catch (IllegalArgumentException e) {
+
+                // The request body was not valid JSON.
+                ctx.status(400).result(e.getMessage());
             }
         });
 
@@ -131,7 +137,7 @@ public class Main {
                                 .getUserId(token);
 
                 TaskRequest request =
-                        ctx.bodyAsClass(TaskRequest.class);
+                        readBody(ctx, TaskRequest.class);
 
                 int taskId =
                         taskService.createTask(
@@ -215,6 +221,16 @@ public class Main {
         System.out.println(
                 "Secure Student Task Manager running on http://localhost:7077"
         );
+    }
+
+    // Reads the JSON body. A broken or missing body becomes a 400 error
+    // (IllegalArgumentException) instead of a 500 server error.
+    private static <T> T readBody(Context ctx, Class<T> type) {
+        try {
+            return ctx.bodyAsClass(type);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid request body");
+        }
     }
 
     // Request body for registration.

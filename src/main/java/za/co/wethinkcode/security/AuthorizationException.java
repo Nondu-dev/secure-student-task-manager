@@ -6,6 +6,8 @@ package za.co.wethinkcode.security;
  */
 public class AuthorizationException extends SecurityException {
 
+    private static final long serialVersionUID = 1L;
+
     public AuthorizationException(String message) {
         super(message);
     }

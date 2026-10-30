@@ -33,9 +33,9 @@ class SecurityAttackTest extends TestDatabase {
                 "Alice's private information"
         );
 
-        // AuthorizationException is a SecurityException, so this passes.
+        // Bob is logged in but is not the owner, so access is refused.
         assertThrows(
-                SecurityException.class,
+                AuthorizationException.class,
                 () -> taskService.getTask(aliceTaskId, bobId)
         );
     }

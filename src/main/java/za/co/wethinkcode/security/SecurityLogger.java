@@ -18,11 +18,12 @@ public class SecurityLogger {
     private static final Path LOG_FILE =
             Path.of("security.log");
 
-    // Store security events
-    private final List<String> events = new ArrayList<>();
+    // Store security events (synchronized because requests run on several threads)
+    private final List<String> events =
+            Collections.synchronizedList(new ArrayList<>());
 
     // Record a security event
-    public void log(String eventType, String username) {
+    public synchronized void log(String eventType, String username) {
 
         String safeUsername = sanitize(username);
 
@@ -49,23 +50,41 @@ public class SecurityLogger {
                 .replace("\n", "_");
     }
 
-    // Write the event to the log file
+    // Write the event to the log file. On Windows another program (for example
+    // an antivirus scan or an editor) can lock the file for a moment, so the
+    // write is tried a few times before giving up.
     private void writeToFile(String event) {
 
-        try {
-            Files.writeString(
-                    LOG_FILE,
-                    event + System.lineSeparator(),
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.APPEND
-            );
+        IOException lastError = null;
 
-        } catch (IOException exception) {
-            throw new RuntimeException(
-                    "Could not write security log",
-                    exception
-            );
+        for (int attempt = 1; attempt <= 5; attempt++) {
+
+            try {
+                Files.writeString(
+                        LOG_FILE,
+                        event + System.lineSeparator(),
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.APPEND
+                );
+
+                return;
+
+            } catch (IOException exception) {
+                lastError = exception;
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
+
+        throw new RuntimeException(
+                "Could not write security log",
+                lastError
+        );
     }
 
     // Return recorded security events

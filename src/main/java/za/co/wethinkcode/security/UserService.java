@@ -61,6 +61,18 @@ public class UserService {
     // Check user login details
     public boolean login(String username, String password) throws Exception {
 
+        // A missing username or password (for example a JSON field that was
+        // left out) is a failed login, not a crash.
+        if (username == null || password == null) {
+
+            securityLogger.log(
+                    "LOGIN_FAILED",
+                    username
+            );
+
+            return false;
+        }
+
         // Stop login attempts if the account is blocked
         if (loginProtection.isBlocked(username)) {
 

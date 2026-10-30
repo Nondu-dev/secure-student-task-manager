@@ -118,6 +118,23 @@ class UserServiceTest extends TestDatabase {
         assertTrue(newEntries.contains("LOGIN_FAILED | frank"));
     }
 
+    // A missing username or password (for example a JSON field left out)
+    // must be a normal failed login, not a crash.
+    @Test
+    void loginFailsWhenUsernameOrPasswordIsMissing() throws Exception {
+        UserService userService = new UserService();
+
+        userService.register("kate", "password123");
+
+        assertFalse(userService.login(null, "password123"));
+        assertFalse(userService.login("kate", null));
+
+        assertThrows(
+                SecurityException.class,
+                () -> userService.loginAndCreateSession(null, null)
+        );
+    }
+
     @Test
     void successfulLoginCreatesSession() throws Exception {
         UserService userService = new UserService();

@@ -54,7 +54,7 @@ class TaskServiceTest extends TestDatabase {
         );
 
         assertThrows(
-                SecurityException.class,
+                AuthorizationException.class,
                 () -> taskService.getTask(aliceTaskId, bobId)
         );
     }

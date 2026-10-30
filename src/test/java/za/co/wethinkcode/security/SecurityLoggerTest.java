@@ -107,5 +107,9 @@ class SecurityLoggerTest {
                         "alice\nLOGIN_SUCCESS | hacker"
                 )
         );
+
+        // Only one line was written, and the line break became an underscore.
+        assertEquals(1, content.lines().count());
+        assertTrue(content.contains("alice_LOGIN_SUCCESS | hacker"));
     }
 }
