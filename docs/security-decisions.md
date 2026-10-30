@@ -240,7 +240,7 @@ Examples include:
 * Temporary login lockout
 * Log injection
 
-The current test suite contains 51 tests.
+The current test suite contains 56 tests.
 
 ### Security benefit
 
@@ -297,6 +297,16 @@ Failed login attempts and temporary lockout information are currently stored in 
 If the application restarts, the login protection state is reset.
 
 A future version could store this information persistently.
+
+### No HTTPS
+
+The API runs on plain HTTP on localhost, so passwords and session tokens are not encrypted while they travel.
+
+A real deployment must use HTTPS.
+
+### Task details
+
+The task endpoint currently returns only the task title. The description is stored in the database but is not returned yet.
 
 ### Log monitoring
 

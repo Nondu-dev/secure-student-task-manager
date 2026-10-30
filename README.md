@@ -53,6 +53,7 @@ The project focuses on implementing common cybersecurity controls in a practical
     │   └── test/
     │       └── java/
     │           └── za/co/wethinkcode/security/
+    ├── demo.ps1
     ├── README.md
     ├── pom.xml
     └── .gitignore
@@ -85,7 +86,7 @@ Database queries use PreparedStatement with parameters instead of building SQL s
 
 Successful login creates a UUID session token.
 
-Sessions expire after a period of inactivity, and invalid or expired sessions are rejected.
+Sessions expire 30 minutes after login, and invalid or expired sessions are rejected. Logging out removes the session straight away.
 
 ### Login Protection
 
@@ -116,6 +117,26 @@ Start the Web API:
 The API runs on:
 
     http://localhost:7077
+
+### API endpoints
+
+| Method | Path          | Needs token | Result                                   |
+|--------|---------------|-------------|------------------------------------------|
+| POST   | /register     | No          | 201 created, 400 invalid or duplicate    |
+| POST   | /login        | No          | 200 and a session token, 401 refused     |
+| POST   | /logout       | Yes         | 200 logged out, 401 bad token            |
+| POST   | /tasks        | Yes         | 201 created, 400 invalid, 401 bad token  |
+| GET    | /tasks/{id}   | Yes         | 200, 400 bad id, 401, 403 not the owner, 404 |
+
+Send the token in the header `Authorization: Bearer <token>`.
+
+### Demo script
+
+With the API running, open a second PowerShell window in the project folder and run:
+
+    powershell -ExecutionPolicy Bypass -File .\demo.ps1
+
+It walks through registration, login, tasks, task owners, a SQL injection attempt, the login limit and logout. Restart the API before running it again, because the login limit is kept in memory.
 
 ## Documentation
 

@@ -211,39 +211,22 @@ The tests currently verify that:
 * Successful login resets failed attempts.
 * Passwords are stored as BCrypt hashes.
 
-The current test suite contains **42 passing tests**.
+The current test suite contains **56 tests**.
 
 ---
 
-## 7. Remaining Security Improvements
+## 7. Security Controls Added Since the First Version
 
-The project is still being developed.
+The first version of this threat model listed some planned improvements. These are now done:
 
-The following improvements are planned:
+* **Input validation:** `ValidationService` is used by registration and task creation, so invalid input is rejected.
+* **Sessions:** a successful login creates a UUID session token.
+* **Session expiration:** a session ends 30 minutes after login.
+* **Persistent security logging:** security events are written to `security.log`.
+* **Log injection protection:** line breaks in usernames are replaced before logging.
+* **Login protection:** 5 failed attempts block the account for 5 minutes.
 
-### Input validation
-
-A `ValidationService` has been created and tested.
-
-The next improvement is to connect it directly to registration and task creation so that invalid input is rejected by the actual application.
-
-### Session integration
-
-The `SessionService` has been created and tested.
-
-The next improvement is to connect sessions directly to the login process so that a successful login creates a session.
-
-### Persistent security logging
-
-Security events are currently stored in memory.
-
-A future improvement would be to store important security events in a file or database.
-
-### Session expiration
-
-Sessions currently remain available while the application is running.
-
-A future improvement would be to add session expiration.
+Remaining limitations are listed in `security-decisions.md`, section 13.
 
 ---
 

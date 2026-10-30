@@ -81,6 +81,16 @@
                 <version>3.5.3</version>
             </plugin>
 
+            <!-- Lets "mvn exec:java" start the web API -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>za.co.wethinkcode.security.Main</mainClass>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

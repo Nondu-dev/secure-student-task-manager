@@ -63,6 +63,7 @@ Authentication tests verify that:
 * Failed login is recorded.
 * A successful login can create a session.
 * A failed login does not create a session.
+* A missing username or password is treated as a failed login (no crash).
 
 Authentication answers the question:
 
@@ -99,6 +100,9 @@ The validation tests check that:
 * Usernames containing only spaces are rejected.
 * Valid passwords are accepted.
 * Empty passwords are rejected.
+* Passwords shorter than 8 characters are rejected.
+* Missing (null) values are rejected.
+* Usernames longer than 50 characters and task titles longer than 100 characters are rejected.
 * Valid task titles are accepted.
 * Empty task titles are rejected.
 * Task titles containing only spaces are rejected.
@@ -266,13 +270,13 @@ These tests help demonstrate that the security controls work against realistic a
 
 The complete test suite currently contains:
 
-51 tests
+56 tests
 
 All tests pass successfully.
 
 The latest result is:
 
-Tests run: 51
+Tests run: 56
 Failures: 0
 Errors: 0
 Skipped: 0
